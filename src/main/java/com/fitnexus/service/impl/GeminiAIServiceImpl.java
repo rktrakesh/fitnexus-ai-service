@@ -148,18 +148,25 @@ public class GeminiAIServiceImpl implements GeminiAIService {
     }
 
     private List<String> extractSuggestions(JsonNode suggestionsNode) {
-        List <String> suggestions = new ArrayList<>();
+        List<String> suggestions = new ArrayList<>();
+
         if (suggestionsNode.isArray()) {
             suggestionsNode.forEach(suggestion -> {
                 String workout = suggestion.path("workout").asText();
                 String description = suggestion.path("description").asText();
-                suggestions.add(String.format("%s, %s", workout, description));
+                suggestions.add(String.format("%s: %s", workout, description));
             });
+        } else if (suggestionsNode.isObject()) {
+            String workout = suggestionsNode.path("workout").asText();
+            String description = suggestionsNode.path("description").asText();
+            suggestions.add(String.format("%s: %s", workout, description));
         }
+
         return suggestions.isEmpty()
-                ? Collections.singletonList("No specific suggestions provides.")
+                ? Collections.singletonList("No specific suggestions provided.")
                 : suggestions;
     }
+
 
     private List<String> extractImprovements(JsonNode improvementsNode) {
         List<String> improvements = new ArrayList<>();
@@ -225,7 +232,7 @@ public class GeminiAIServiceImpl implements GeminiAIService {
                     "workout": "<type of workout or training style to consider>",
                     "description": "<why this workout is recommended and what it would improve>"
                   },
-                  "safety": "<"<safety 1>", "<safety 2>", "..." precautions, form tips, and recovery advice>"
+                  "safety": "<"<safety 1>", "<safety 2>", "..." provide comprehensive data precautions, form tips, and recovery advice>"
                 }
             
                 Requirements:
@@ -233,6 +240,7 @@ public class GeminiAIServiceImpl implements GeminiAIService {
                 - Use the provided activity data as the only source for recommendations
                 - Keep the tone supportive and practical
                 - Do not write anything outside the JSON object
+                - Provide data for every section like (analysis, improvements, suggestions, safety).
             
                 Here is the activity DTO data:
                 {
